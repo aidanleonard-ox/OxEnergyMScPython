@@ -57,7 +57,20 @@ def calc_pv_array_size(building_width, building_length,
 
     # TODO: add your code to calculate PV array size from the previous exercise.
 
-    return # TODO: return the calculated total power
+    # calculate the number of full PV panels that fit along the length of the building in horizontal orientation
+    n_length = math.floor(building_length / (pv_width / 1000)) # remember to convert panel width from mm to m
+
+    # calculate the number of full PV panels that fit the height of the roof in horizontal orientation
+    slope_height = 0.5 *building_width * 1/math.cos(math.radians(roof_angle)) # calculate the height of the roof using trigonometry
+    n_height = math.floor(slope_height / (pv_height / 1000)) # remember to convert panel length from mm to m
+
+    # calculate the total number of PV panels that can fit on the roof in horizontal orientation
+    n_total = n_length * n_height
+
+    # calculate the total power capacity of the PV array
+    total_power = n_total * pv_power / 1000 # convert from watts to kilowatts
+
+    return total_power # TODO: return the calculated total power
 
 # =============================================================================
 # Example PV class
@@ -194,21 +207,21 @@ class Storage():
         # 5. Battery power  (discharge = negative, charge = positive)
         if demand_P > 0:
             # Case (a): discharge
-            self.bat_P[t] = ...  # TODO
+            self.bat_P[t] = -min(demand_P, self.max_power, self.efficiency * (soc_prev - self.min_soc) / self.dt)  # TODO
         elif demand_P < 0:
             # Case (b): charge
-            self.bat_P[t] = ...  # TODO
+            self.bat_P[t] = min(-demand_P, self.max_power, (self.max_soc - soc_prev) / (self.efficiency * self.dt))  # TODO
         else:
             # Case (c): no battery operation
             self.bat_P[t] = 0
     
         # 6. Update SoC (apply efficiency depending on charge/discharge)
         if self.bat_P[t] >= 0:
-            self.soc_E[t] = ...  # TODO charge
+            self.soc_E[t] = soc_prev + (self.bat_P[t] * self.efficiency * self.dt)  # TODO charge
         else:
-            self.soc_E[t] = ...  # TODO discharge
+            self.soc_E[t] = soc_prev + (self.bat_P[t] / self.efficiency * self.dt)  # TODO discharge
     
-        result_net_P_t = ...  # TODO
+        result_net_P_t = demand_P + self.bat_P[t]  # new net power
         
         
         return result_net_P_t
